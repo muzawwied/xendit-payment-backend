@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Xendit Payment Tester</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #0f172a; }
+    .tab-active { background: #6366f1; color: white; }
+    .tab-inactive { background: #1e293b; color: #94a3b8; }
+    .result-box { font-family: 'Fira Mono', monospace; font-size: 12px; }
+    .status-PAID { color: #22c55e; }
+    .status-PENDING { color: #f59e0b; }
+    .status-EXPIRED { color: #ef4444; }
+    .status-SETTLED { color: #22c55e; }
+    .status-ACTIVE { color: #22c55e; }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    pre { white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body class="min-h-screen text-white">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 shadow-lg">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">⚡ Xendit Payment Tester</h1>
+        <p class="text-indigo-200 text-sm mt-1">Sandbox Mode — Testing Environment</p>
+      </div>
+      <span class="bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full">SANDBOX</span>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto p-6">
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6 flex-wrap">
+      <button onclick="switchTab('invoice')" id="tab-invoice" class="tab-active px-4 py-2 rounded-lg text-sm font-medium transition">📄 Invoice</button>
+      <button onclick="switchTab('va')" id="tab-va" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">🏦 Virtual Account</button>
+      <button onclick="switchTab('ewallet')" id="tab-ewallet" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">📱 eWallet</button>
+      <button onclick="switchTab('balance')" id="tab-balance" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">💰 Cek Saldo</button>
+      <button onclick="switchTab('check')" id="tab-check" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">🔍 Cek Status</button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- LEFT: Form -->
+      <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+
+        <!-- INVOICE TAB -->
+        <div id="panel-invoice">
+          <h2 class="text-lg font-semibold mb-4 text-indigo-400">📄 Buat Invoice</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">External ID *</label>
+              <input id="inv-external_id" value="order-001" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Jumlah (IDR) *</label>
+              <input id="inv-amount" type="number" value="150000" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Email Payer *</label>
+              <input id="inv-payer_email" value="test@email.com" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Deskripsi *</label>
+              <input id="inv-description" value="Pembayaran Order #001" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Success Redirect URL</label>
+              <input id="inv-success_redirect_url" value="https://yourwebsite.com/success" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Metode Pembayaran</label>
+              <div class="grid grid-cols-3 gap-2 mt-1">
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="BCA" class="pm-check"> BCA</label>
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="BNI" class="pm-check"> BNI</label>
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="BRI" class="pm-check"> BRI</label>
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="MANDIRI" class="pm-check"> Mandiri</label>
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="OVO" class="pm-check"> OVO</label>
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="DANA" class="pm-check"> DANA</label>
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="SHOPEEPAY" class="pm-check"> ShopeePay</label>
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="QRIS" class="pm-check"> QRIS</label>
+                <label class="flex items-center gap-1 text-xs"><input type="checkbox" checked value="CREDIT_CARD" class="pm-check"> Kartu Kredit</label>
+              </div>
+            </div>
+            <button onclick="createInvoice()" class="w-full bg-indigo-600 hover:bg-indigo-700 transition rounded-lg py-2.5 text-sm font-semibold mt-2">
+              Buat Invoice →
+            </button>
+          </div>
+        </div>
+
+        <!-- VA TAB -->
+        <div id="panel-va" class="hidden">
+          <h2 class="text-lg font-semibold mb-4 text-blue-400">🏦 Buat Virtual Account</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">External ID *</label>
+              <input id="va-external_id" value="va-001" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Bank *</label>
+              <select id="va-bank_code" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                <option value="BCA">BCA</option>
+                <option value="BNI">BNI</option>
+                <option value="BRI">BRI</option>
+                <option value="MANDIRI">Mandiri</option>
+                <option value="PERMATA">Permata</option>
+                <option value="BSI">BSI</option>
+                <option value="CIMB">CIMB</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Nama *</label>
+              <input id="va-name" value="John Doe" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Expected Amount (opsional)</label>
+              <input id="va-expected_amount" type="number" placeholder="150000" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500" />
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="checkbox" id="va-is_closed" />
+              <label class="text-xs text-slate-400">Closed VA (jumlah harus tepat)</label>
+            </div>
+            <button onclick="createVA()" class="w-full bg-blue-600 hover:bg-blue-700 transition rounded-lg py-2.5 text-sm font-semibold mt-2">
+              Buat Virtual Account →
+            </button>
+          </div>
+        </div>
+
+        <!-- EWALLET TAB -->
+        <div id="panel-ewallet" class="hidden">
+          <h2 class="text-lg font-semibold mb-4 text-green-400">📱 Charge eWallet</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Reference ID *</label>
+              <input id="ew-reference_id" value="ewallet-001" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">eWallet *</label>
+              <select id="ew-channel_code" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500">
+                <option value="OVO">OVO</option>
+                <option value="DANA">DANA</option>
+                <option value="LINKAJA">LinkAja</option>
+                <option value="SHOPEEPAY">ShopeePay</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Jumlah (IDR) *</label>
+              <input id="ew-amount" type="number" value="50000" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Nomor HP (untuk OVO/LinkAja)</label>
+              <input id="ew-mobile_number" value="+628123456789" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Success Redirect URL</label>
+              <input id="ew-success_redirect_url" value="https://yourwebsite.com/success" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500" />
+            </div>
+            <button onclick="createEwallet()" class="w-full bg-green-600 hover:bg-green-700 transition rounded-lg py-2.5 text-sm font-semibold mt-2">
+              Charge eWallet →
+            </button>
+          </div>
+        </div>
+
+        <!-- BALANCE TAB -->
+        <div id="panel-balance" class="hidden">
+          <h2 class="text-lg font-semibold mb-4 text-yellow-400">💰 Cek Saldo</h2>
+          <p class="text-sm text-slate-400 mb-4">Cek saldo akun Xendit sandbox kamu.</p>
+          <button onclick="checkBalance()" class="w-full bg-yellow-500 hover:bg-yellow-600 transition rounded-lg py-2.5 text-sm font-semibold text-black">
+            Cek Saldo Sekarang →
+          </button>
+        </div>
+
+        <!-- CHECK STATUS TAB -->
+        <div id="panel-check" class="hidden">
+          <h2 class="text-lg font-semibold mb-4 text-pink-400">🔍 Cek Status Transaksi</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Tipe</label>
+              <select id="check-type" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm">
+                <option value="invoice">Invoice</option>
+                <option value="va">Virtual Account</option>
+                <option value="ewallet">eWallet Charge</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">ID Transaksi *</label>
+              <input id="check-id" placeholder="Masukkan invoice_id / va_id / charge_id" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500" />
+            </div>
+            <button onclick="checkStatus()" class="w-full bg-pink-600 hover:bg-pink-700 transition rounded-lg py-2.5 text-sm font-semibold">
+              Cek Status →
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Result -->
+      <div class="space-y-4">
+
+        <!-- Status Card -->
+        <div id="status-card" class="hidden bg-slate-800 rounded-2xl p-5 border border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-300">Status Transaksi</h3>
+            <span id="status-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-700"></span>
+          </div>
+          <div id="status-details" class="space-y-2 text-sm"></div>
+          <div id="invoice-link-wrap" class="hidden mt-3">
+            <a id="invoice-link" href="#" target="_blank" class="block text-center bg-indigo-600 hover:bg-indigo-700 transition rounded-lg py-2 text-sm font-semibold">
+              🔗 Buka Halaman Pembayaran
+            </a>
+          </div>
+        </div>
+
+        <!-- Raw Response -->
+        <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-300">Response JSON</h3>
+            <div class="flex gap-2">
+              <span id="loading-indicator" class="hidden text-xs text-indigo-400 pulse">⏳ Loading...</span>
+              <button onclick="copyResult()" class="text-xs text-slate-400 hover:text-white transition">📋 Copy</button>
+              <button onclick="clearResult()" class="text-xs text-slate-400 hover:text-white transition">🗑 Clear</button>
+            </div>
+          </div>
+          <pre id="result-box" class="result-box bg-slate-900 rounded-lg p-4 text-slate-300 min-h-[200px] max-h-[400px] overflow-auto">
+// Response akan muncul di sini...
+          </pre>
+        </div>
+
+        <!-- History -->
+        <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-300">📜 Riwayat Request</h3>
+            <button onclick="clearHistory()" class="text-xs text-slate-400 hover:text-white">Clear</button>
+          </div>
+          <div id="history-list" class="space-y-2 max-h-[200px] overflow-auto text-xs text-slate-400">
+            <p class="text-slate-600 italic">Belum ada request...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BASE_URL = "https://superagent-d156b22f.base44.app/functions/xenditPayment";
+    let history = [];
+
+    // ─── TAB SWITCHING ───
+    function switchTab(tab) {
+      ['invoice','va','ewallet','balance','check'].forEach(t => {
+        document.getElementById('panel-' + t).classList.add('hidden');
+        document.getElementById('tab-' + t).className = 'tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition';
+      });
+      document.getElementById('panel-' + tab).classList.remove('hidden');
+      document.getElementById('tab-' + tab).className = 'tab-active px-4 py-2 rounded-lg text-sm font-medium transition';
+    }
+
+    // ─── HELPERS ───
+    function setLoading(on) {
+      document.getElementById('loading-indicator').classList.toggle('hidden', !on);
+    }
+
+    function showResult(data) {
+      document.getElementById('result-box').textContent = JSON.stringify(data, null, 2);
+    }
+
+    function addHistory(action, success) {
+      const time = new Date().toLocaleTimeString('id-ID');
+      history.unshift({ action, success, time });
+      const el = document.getElementById('history-list');
+      el.innerHTML = history.slice(0,10).map(h =>
+        `<div class="flex items-center justify-between py-1 border-b border-slate-700">
+          <span>${h.action}</span>
+          <div class="flex items-center gap-2">
+            <span class="${h.success ? 'text-green-400' : 'text-red-400'}">${h.success ? '✅' : '❌'}</span>
+            <span class="text-slate-600">${h.time}</span>
+          </div>
+        </div>`
+      ).join('');
+    }
+
+    function showStatusCard(data, type) {
+      const card = document.getElementById('status-card');
+      card.classList.remove('hidden');
+
+      const badge = document.getElementById('status-badge');
+      const status = data.status || data.charge_status || '-';
+      badge.textContent = status;
+      badge.className = `text-xs font-bold px-3 py-1 rounded-full bg-slate-700 status-${status}`;
+
+      const details = document.getElementById('status-details');
+      if (type === 'invoice') {
+        details.innerHTML = `
+          <div class="flex justify-between"><span class="text-slate-500">ID</span><span class="font-mono text-xs">${data.id || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">External ID</span><span>${data.external_id || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Jumlah</span><span class="font-semibold">Rp ${(data.amount||0).toLocaleString('id-ID')}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Email</span><span>${data.payer_email || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Expired</span><span class="text-xs">${data.expiry_date ? new Date(data.expiry_date).toLocaleString('id-ID') : '-'}</span></div>
+        `;
+        const linkWrap = document.getElementById('invoice-link-wrap');
+        if (data.invoice_url) {
+          linkWrap.classList.remove('hidden');
+          document.getElementById('invoice-link').href = data.invoice_url;
+        }
+      } else if (type === 'va') {
+        details.innerHTML = `
+          <div class="flex justify-between"><span class="text-slate-500">Bank</span><span class="font-semibold">${data.bank_code || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Nomor VA</span><span class="font-mono font-bold text-blue-400">${data.account_number || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Nama</span><span>${data.name || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Expected</span><span>Rp ${(data.expected_amount||0).toLocaleString('id-ID')}</span></div>
+        `;
+        document.getElementById('invoice-link-wrap').classList.add('hidden');
+      } else if (type === 'ewallet') {
+        details.innerHTML = `
+          <div class="flex justify-between"><span class="text-slate-500">ID</span><span class="font-mono text-xs">${data.id || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Channel</span><span class="font-semibold">${data.channel_code || '-'}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Jumlah</span><span>Rp ${(data.charge_amount||0).toLocaleString('id-ID')}</span></div>
+        `;
+        const linkWrap = document.getElementById('invoice-link-wrap');
+        const checkoutUrl = data.actions?.desktop_web_checkout_url || data.actions?.mobile_web_checkout_url;
+        if (checkoutUrl) {
+          linkWrap.classList.remove('hidden');
+          document.getElementById('invoice-link').href = checkoutUrl;
+          document.getElementById('invoice-link').textContent = '🔗 Buka Halaman eWallet';
+        } else {
+          linkWrap.classList.add('hidden');
+        }
+      }
+    }
+
+    function copyResult() {
+      navigator.clipboard.writeText(document.getElementById('result-box').textContent);
+      alert('✅ Copied!');
+    }
+
+    function clearResult() {
+      document.getElementById('result-box').textContent = '// Cleared...';
+      document.getElementById('status-card').classList.add('hidden');
+    }
+
+    function clearHistory() {
+      history = [];
+      document.getElementById('history-list').innerHTML = '<p class="text-slate-600 italic">Belum ada request...</p>';
+    }
+
+    // ─── API CALLS ───
+    async function apiCall(action, body = null, method = 'POST') {
+      setLoading(true);
+      try {
+        const opts = {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+        };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(`${BASE_URL}?action=${action}`, opts);
+        const data = await res.json();
+        showResult(data);
+        addHistory(action, data.success !== false && res.ok);
+        setLoading(false);
+        return data;
+      } catch (err) {
+        const errData = { success: false, error: err.message };
+        showResult(errData);
+        addHistory(action, false);
+        setLoading(false);
+        return errData;
+      }
+    }
+
+    async function createInvoice() {
+      const payment_methods = [...document.querySelectorAll('.pm-check:checked')].map(el => el.value);
+      const body = {
+        external_id: document.getElementById('inv-external_id').value,
+        amount: parseFloat(document.getElementById('inv-amount').value),
+        payer_email: document.getElementById('inv-payer_email').value,
+        description: document.getElementById('inv-description').value,
+        success_redirect_url: document.getElementById('inv-success_redirect_url').value,
+        payment_methods,
+      };
+      const res = await apiCall('create_invoice', body);
+      if (res.data) showStatusCard(res.data, 'invoice');
+    }
+
+    async function createVA() {
+      const amount = document.getElementById('va-expected_amount').value;
+      const body = {
+        external_id: document.getElementById('va-external_id').value,
+        bank_code: document.getElementById('va-bank_code').value,
+        name: document.getElementById('va-name').value,
+        is_closed: document.getElementById('va-is_closed').checked,
+      };
+      if (amount) body.expected_amount = parseFloat(amount);
+      const res = await apiCall('create_va', body);
+      if (res.data) showStatusCard(res.data, 'va');
+    }
+
+    async function createEwallet() {
+      const body = {
+        reference_id: document.getElementById('ew-reference_id').value,
+        amount: parseFloat(document.getElementById('ew-amount').value),
+        channel_code: document.getElementById('ew-channel_code').value,
+        mobile_number: document.getElementById('ew-mobile_number').value,
+        success_redirect_url: document.getElementById('ew-success_redirect_url').value,
+      };
+      const res = await apiCall('create_ewallet', body);
+      if (res.data) showStatusCard(res.data, 'ewallet');
+    }
+
+    async function checkBalance() {
+      const res = await apiCall('balance', null, 'GET');
+      if (res.data) {
+        const card = document.getElementById('status-card');
+        card.classList.remove('hidden');
+        document.getElementById('status-badge').textContent = 'ACTIVE';
+        document.getElementById('status-badge').className = 'text-xs font-bold px-3 py-1 rounded-full bg-slate-700 status-ACTIVE';
+        document.getElementById('invoice-link-wrap').classList.add('hidden');
+        document.getElementById('status-details').innerHTML = `
+          <div class="flex justify-between"><span class="text-slate-500">Saldo CASH</span><span class="font-bold text-yellow-400 text-lg">Rp ${(res.data.balance||0).toLocaleString('id-ID')}</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Currency</span><span>IDR</span></div>
+        `;
+      }
+    }
+
+    async function checkStatus() {
+      const type = document.getElementById('check-type').value;
+      const id = document.getElementById('check-id').value.trim();
+      if (!id) return alert('Masukkan ID transaksi!');
+      const actionMap = { invoice: 'get_invoice', va: 'get_va', ewallet: 'get_ewallet' };
+      const keyMap = { invoice: 'invoice_id', va: 'va_id', ewallet: 'charge_id' };
+      const res = await apiCall(actionMap[type], { [keyMap[type]]: id });
+      if (res.data) showStatusCard(res.data, type);
+    }
+  </script>
+
+</body>
+</html>
