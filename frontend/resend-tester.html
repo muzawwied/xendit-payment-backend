@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resend Email Tester</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #0f172a; }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    pre { white-space: pre-wrap; word-break: break-all; }
+    .tab-active { background: #6366f1; color: white; }
+    .tab-inactive { background: #1e293b; color: #94a3b8; }
+  </style>
+</head>
+<body class="min-h-screen text-white">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-6 shadow-lg">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">📬 Resend Email Tester</h1>
+        <p class="text-violet-200 text-sm mt-1">Testing kirim email via Resend API</p>
+      </div>
+      <div class="text-right">
+        <span class="bg-green-400 text-green-900 text-xs font-bold px-3 py-1 rounded-full">LIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto p-6">
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6">
+      <button onclick="switchTab('simple')" id="tab-simple" class="tab-active px-4 py-2 rounded-lg text-sm font-medium transition">✉️ Email Simple</button>
+      <button onclick="switchTab('template')" id="tab-template" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">🎨 Email Template</button>
+      <button onclick="switchTab('check')" id="tab-check" class="tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition">🔍 Cek Status</button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- LEFT: Form -->
+      <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+
+        <!-- SIMPLE TAB -->
+        <div id="panel-simple">
+          <h2 class="text-lg font-semibold mb-4 text-violet-400">✉️ Kirim Email Simple</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Dari (From)</label>
+              <input id="s-from" value="onboarding@resend.dev" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500"/>
+              <p class="text-xs text-slate-500 mt-1">Untuk testing gunakan: onboarding@resend.dev</p>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Kepada (To) *</label>
+              <input id="s-to" placeholder="email@contoh.com" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Subject *</label>
+              <input id="s-subject" value="Test Email dari Resend 🚀" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Mode Konten</label>
+              <div class="flex gap-2 mb-2">
+                <button onclick="setMode('text')" id="mode-text" class="px-3 py-1 rounded text-xs bg-violet-600 text-white">Plain Text</button>
+                <button onclick="setMode('html')" id="mode-html" class="px-3 py-1 rounded text-xs bg-slate-700 text-slate-300">HTML</button>
+              </div>
+              <textarea id="s-content" rows="5" placeholder="Isi pesan kamu di sini..." class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500 font-mono">Halo! Ini test email dari Resend API. Berhasil terkirim! 🎉</textarea>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">CC (opsional)</label>
+              <input id="s-cc" placeholder="cc@email.com" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500"/>
+            </div>
+            <button onclick="sendSimple()" id="btn-simple" class="w-full bg-violet-600 hover:bg-violet-700 transition rounded-lg py-2.5 text-sm font-semibold mt-2">
+              Kirim Email →
+            </button>
+          </div>
+        </div>
+
+        <!-- TEMPLATE TAB -->
+        <div id="panel-template" class="hidden">
+          <h2 class="text-lg font-semibold mb-4 text-indigo-400">🎨 Kirim Email Template</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Dari (From)</label>
+              <input id="t-from" value="onboarding@resend.dev" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Kepada (To) *</label>
+              <input id="t-to" placeholder="email@contoh.com" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Subject *</label>
+              <input id="t-subject" value="Notifikasi dari Sistem 📬" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Nama Penerima</label>
+              <input id="t-name" placeholder="John Doe" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Isi Pesan *</label>
+              <textarea id="t-message" rows="4" placeholder="Tulis pesan kamu di sini..." class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">Terima kasih telah menggunakan layanan kami. Email ini dikirim otomatis melalui Resend API yang terintegrasi dengan backend Base44.</textarea>
+            </div>
+            <button onclick="sendTemplate()" id="btn-template" class="w-full bg-indigo-600 hover:bg-indigo-700 transition rounded-lg py-2.5 text-sm font-semibold mt-2">
+              Kirim dengan Template →
+            </button>
+          </div>
+        </div>
+
+        <!-- CHECK TAB -->
+        <div id="panel-check" class="hidden">
+          <h2 class="text-lg font-semibold mb-4 text-pink-400">🔍 Cek Status Email</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Email ID *</label>
+              <input id="c-id" id="check-id" placeholder="Masukkan email ID dari response..." class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500"/>
+              <p class="text-xs text-slate-500 mt-1">Email ID otomatis terisi setelah kirim email</p>
+            </div>
+            <button onclick="checkStatus()" class="w-full bg-pink-600 hover:bg-pink-700 transition rounded-lg py-2.5 text-sm font-semibold mt-2">
+              Cek Status →
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Response -->
+      <div class="space-y-4">
+
+        <!-- Status Card -->
+        <div id="status-card" class="hidden bg-slate-800 rounded-2xl p-5 border border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-300">Hasil Pengiriman</h3>
+            <span id="status-icon" class="text-2xl"></span>
+          </div>
+          <div id="status-details"></div>
+        </div>
+
+        <!-- JSON Response -->
+        <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-300">Response JSON</h3>
+            <div class="flex items-center gap-3">
+              <span id="loading" class="hidden text-xs text-violet-400 pulse">⏳ Mengirim...</span>
+              <button onclick="copyJSON()" class="text-xs text-slate-400 hover:text-white">📋 Copy</button>
+            </div>
+          </div>
+          <pre id="result" class="bg-slate-900 rounded-lg p-4 text-slate-300 text-xs min-h-[180px] max-h-[350px] overflow-auto">// Response akan muncul di sini setelah kirim email...</pre>
+        </div>
+
+        <!-- Riwayat -->
+        <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-300">📜 Riwayat Pengiriman</h3>
+            <button onclick="clearHistory()" class="text-xs text-slate-400 hover:text-white">Clear</button>
+          </div>
+          <div id="history" class="space-y-2 max-h-[180px] overflow-auto">
+            <p class="text-xs text-slate-600 italic">Belum ada pengiriman...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+  const BASE_URL = "https://superagent-d156b22f.base44.app/functions/resendEmail";
+  let emailHistory = [];
+  let contentMode = 'text';
+  let lastEmailId = '';
+
+  function switchTab(tab) {
+    ['simple','template','check'].forEach(t => {
+      document.getElementById('panel-' + t).classList.add('hidden');
+      document.getElementById('tab-' + t).className = 'tab-inactive px-4 py-2 rounded-lg text-sm font-medium transition';
+    });
+    document.getElementById('panel-' + tab).classList.remove('hidden');
+    document.getElementById('tab-' + tab).className = 'tab-active px-4 py-2 rounded-lg text-sm font-medium transition';
+  }
+
+  function setMode(mode) {
+    contentMode = mode;
+    document.getElementById('mode-text').className = mode === 'text'
+      ? 'px-3 py-1 rounded text-xs bg-violet-600 text-white'
+      : 'px-3 py-1 rounded text-xs bg-slate-700 text-slate-300';
+    document.getElementById('mode-html').className = mode === 'html'
+      ? 'px-3 py-1 rounded text-xs bg-violet-600 text-white'
+      : 'px-3 py-1 rounded text-xs bg-slate-700 text-slate-300';
+    document.getElementById('s-content').placeholder = mode === 'html'
+      ? '<h1>Judul</h1><p>Isi email HTML kamu...</p>'
+      : 'Isi pesan plain text kamu...';
+  }
+
+  function setLoading(on) {
+    document.getElementById('loading').classList.toggle('hidden', !on);
+  }
+
+  function showResult(data, success) {
+    document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    const card = document.getElementById('status-card');
+    card.classList.remove('hidden');
+
+    if (success && data.data?.id) {
+      lastEmailId = data.data.id;
+      document.getElementById('c-id') && (document.getElementById('c-id').value = lastEmailId);
+      document.getElementById('status-icon').textContent = '✅';
+      document.getElementById('status-details').innerHTML = `
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-slate-400">Status</span><span class="text-green-400 font-semibold">Berhasil Terkirim</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Email ID</span><span class="font-mono text-xs text-violet-300">${data.data.id}</span></div>
+          <button onclick="autoCekStatus('${data.data.id}')" class="w-full mt-2 bg-slate-700 hover:bg-slate-600 rounded-lg py-2 text-xs transition">🔍 Cek Status Email Ini</button>
+        </div>`;
+    } else {
+      document.getElementById('status-icon').textContent = '❌';
+      document.getElementById('status-details').innerHTML = `
+        <div class="text-sm">
+          <span class="text-red-400 font-semibold">Gagal Terkirim</span>
+          <p class="text-slate-400 text-xs mt-1">${data.data?.message || data.error || 'Terjadi kesalahan'}</p>
+        </div>`;
+    }
+  }
+
+  function addHistory(to, subject, success, id) {
+    const time = new Date().toLocaleTimeString('id-ID');
+    emailHistory.unshift({ to, subject, success, id, time });
+    const el = document.getElementById('history');
+    el.innerHTML = emailHistory.slice(0, 8).map(h => `
+      <div class="flex items-center justify-between py-1.5 border-b border-slate-700 text-xs">
+        <div class="flex-1 min-w-0">
+          <p class="text-slate-300 truncate">${h.subject}</p>
+          <p class="text-slate-500 truncate">${h.to}</p>
+        </div>
+        <div class="flex items-center gap-2 ml-2 shrink-0">
+          <span class="${h.success ? 'text-green-400' : 'text-red-400'}">${h.success ? '✅' : '❌'}</span>
+          <span class="text-slate-600">${h.time}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  async function sendSimple() {
+    const to = document.getElementById('s-to').value.trim();
+    const subject = document.getElementById('s-subject').value.trim();
+    const content = document.getElementById('s-content').value.trim();
+    const from = document.getElementById('s-from').value.trim();
+    const cc = document.getElementById('s-cc').value.trim();
+
+    if (!to || !subject) return alert('Isi kolom To dan Subject!');
+
+    setLoading(true);
+    const body = { to, subject, from };
+    if (contentMode === 'html') body.html = content;
+    else body.text = content;
+    if (cc) body.cc = cc;
+
+    try {
+      const res = await fetch(`${BASE_URL}?action=send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      showResult(data, data.success);
+      addHistory(to, subject, data.success, data.data?.id);
+    } catch (e) {
+      showResult({ success: false, error: e.message }, false);
+    }
+    setLoading(false);
+  }
+
+  async function sendTemplate() {
+    const to = document.getElementById('t-to').value.trim();
+    const subject = document.getElementById('t-subject').value.trim();
+    const name = document.getElementById('t-name').value.trim();
+    const message = document.getElementById('t-message').value.trim();
+    const from = document.getElementById('t-from').value.trim();
+
+    if (!to || !subject) return alert('Isi kolom To dan Subject!');
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}?action=send_template`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, name, message, from })
+      });
+      const data = await res.json();
+      showResult(data, data.success);
+      addHistory(to, subject, data.success, data.data?.id);
+    } catch (e) {
+      showResult({ success: false, error: e.message }, false);
+    }
+    setLoading(false);
+  }
+
+  async function checkStatus() {
+    const id = document.getElementById('c-id').value.trim();
+    if (!id) return alert('Masukkan Email ID!');
+    setLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}?action=get`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email_id: id })
+      });
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      const card = document.getElementById('status-card');
+      card.classList.remove('hidden');
+      if (data.success && data.data) {
+        const d = data.data;
+        document.getElementById('status-icon').textContent = '📊';
+        document.getElementById('status-details').innerHTML = `
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-slate-400">Status</span><span class="text-yellow-400 font-semibold">${d.last_event || '-'}</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Kepada</span><span class="text-xs">${Array.isArray(d.to) ? d.to.join(', ') : d.to || '-'}</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Subject</span><span class="text-xs truncate max-w-[160px]">${d.subject || '-'}</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Dikirim</span><span class="text-xs">${d.created_at ? new Date(d.created_at).toLocaleString('id-ID') : '-'}</span></div>
+          </div>`;
+      }
+    } catch (e) {
+      document.getElementById('result').textContent = JSON.stringify({ error: e.message }, null, 2);
+    }
+    setLoading(false);
+  }
+
+  async function autoCekStatus(id) {
+    switchTab('check');
+    document.getElementById('c-id').value = id;
+    await checkStatus();
+  }
+
+  function copyJSON() {
+    navigator.clipboard.writeText(document.getElementById('result').textContent);
+    alert('✅ JSON di-copy!');
+  }
+
+  function clearHistory() {
+    emailHistory = [];
+    document.getElementById('history').innerHTML = '<p class="text-xs text-slate-600 italic">Belum ada pengiriman...</p>';
+  }
+</script>
+</body>
+</html>
